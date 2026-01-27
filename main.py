@@ -128,7 +128,7 @@ while running:
         result_text_rect = result_text.get_rect(center=(WIDTH//2, HEIGHT//2 - 180))
         screen.blit(result_text, result_text_rect)
         #reaction time result in seconds
-        result_display = title_font.render(f"{ms/1000}s", True, BLACK)
+        result_display = title_font.render(f"{reaction_time:.3f}s", True, BLACK)
         result_rect = result_display.get_rect(center=(WIDTH//2, HEIGHT//2-40))
         screen.blit(result_display, result_rect)
         #instruction to return to menu
