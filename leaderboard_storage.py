@@ -4,7 +4,8 @@ import os
 # Leaderboard
 reaction_times_list = []
 MAX_LEADERBOARD_ENTRIES = 10
-LEADERBOARD_FILE = 'leaderboard.json'
+# Use absolute path to ensure leaderboard.json is saved in the same directory as this script
+LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), 'leaderboard.json')
 
 
 def save_leaderboard(): # Save the leaderboard to a JSON file
