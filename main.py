@@ -8,7 +8,7 @@ pygame.init()
 from classes_and_variables import *
 from leaderboard_storage import *
 
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = 1600, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Reaction Time Game")
 
@@ -40,6 +40,9 @@ while running:
                     game_state = "countdown"
                     countdown_number = 3
                     countdown_start_time = time.time()
+                elif game_state == "game":
+                    # User pressed Enter too early - show early press message
+                    game_state = "early_press"
                 elif game_state == "ready":
                     reaction_time = time.time() - green_screen_start_time
                     # Recording reaction time to leaderboard
@@ -53,6 +56,9 @@ while running:
                 elif game_state == "result":
                     game_state = "menu"
                     reaction_time = None
+
+                elif game_state == "early_press":
+                    game_state = "menu"
 
                 elif game_state == "rules":
                     game_state = "menu"
@@ -143,6 +149,22 @@ while running:
         #instruction to return to menu
         return_text = instruction_font.render("Press Enter to return to menu", True, BLACK )
         return_rect = return_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 140))
+        screen.blit(return_text, return_rect)
+
+    elif game_state == "early_press":
+        screen.fill(RED)
+        # Display early press message
+        early_press_title = title_font.render("Too Early!", True, WHITE)
+        early_press_rect = early_press_title.get_rect(center=(WIDTH//2, HEIGHT//2 - 80))
+        screen.blit(early_press_title, early_press_rect)
+        
+        early_press_msg = instruction_font.render("Wait for the screen to turn green before pressing Enter!", True, WHITE)
+        early_press_msg_rect = early_press_msg.get_rect(center=(WIDTH//2, HEIGHT//2 + 20))
+        screen.blit(early_press_msg, early_press_msg_rect)
+        
+        # Display instruction to return to menu
+        return_text = instruction_font.render("Press Enter to return to menu", True, WHITE)
+        return_rect = return_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 120))
         screen.blit(return_text, return_rect)
 
     elif game_state == "rules":

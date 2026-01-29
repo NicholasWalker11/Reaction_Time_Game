@@ -2,7 +2,7 @@ import pygame
 
 
 # Game Variables
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = 1600, 800
 countdown_number = 3
 countdown_start_time = 0
 red_screen_start_time = 0
