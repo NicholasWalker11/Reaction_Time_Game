@@ -3,10 +3,10 @@ import sys
 import random
 import time
 
-# All code before the 'while loop' creates the pygame window and sets the fps for the game.
+# All code before the 'while loop' sets up the game window, imports variables, initializes pygame, and sets fps cap to limit advanced systems from breaking the game.
 pygame.init()
 from classes_and_variables import *
-
+from leaderboard_storage import *
 
 WIDTH, HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -17,14 +17,12 @@ pygame.display.set_caption("Reaction Time Game")
 clock = pygame.time.Clock()
 FPS = 60
 
+# Load saved leaderboard scores
+reaction_times_list = load_leaderboard()
 
 # This is where all the game code will go
 running = True
 game_state = "menu"
-
-#to save results
-reaction_time = None
-
 
 
 while running:
@@ -37,28 +35,39 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
-            if event.key == pygame.K_RETURN:  # Enter key
+            if event.key == pygame.K_RETURN: # Enter key
                 if game_state == "menu":
                     game_state = "countdown"
                     countdown_number = 3
                     countdown_start_time = time.time()
                 elif game_state == "ready":
                     reaction_time = time.time() - green_screen_start_time
-                    game_state = "result" #go to result state after measuring reaction time
+                    # Recording reaction time to leaderboard
+                    reaction_times_list.append(reaction_time)
+                    reaction_times_list.sort()
+                    if len(reaction_times_list) > MAX_LEADERBOARD_ENTRIES:
+                        reaction_times_list = reaction_times_list[:MAX_LEADERBOARD_ENTRIES]
+                    save_leaderboard()  # Save after adding new score
+                    game_state = "result"
 
                 elif game_state == "result":
-                    game_state = "menu" #Return to menu from result screen
+                    game_state = "menu"
+                    reaction_time = None
+
+                elif game_state == "rules":
+                    game_state = "menu"
+                    
+                elif game_state == "leaderboard":
+                    game_state = "menu"
 
         # Checks to see if the buttons are clicked
         if event.type == pygame.MOUSEBUTTONDOWN and game_state == "menu":
-            if event.button == 1:  # Left click
+            if event.button == 1:
                 if rules_button.collidepoint(event.pos):
-                    print("Rules button clicked!")
-                    # Add rules logic here
+                    game_state = "rules"
 
                 if leaderboard_button.collidepoint(event.pos):
-                    print("Leaderboard button clicked!")
-                    # Add leaderboard logic here
+                    game_state = "leaderboard"
 
     # Update countdown
     if game_state == "countdown":
@@ -134,6 +143,51 @@ while running:
         #instruction to return to menu
         return_text = instruction_font.render("Press Enter to return to menu", True, BLACK )
         return_rect = return_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 140))
+        screen.blit(return_text, return_rect)
+
+    elif game_state == "rules":
+        screen.fill(LIGHT_GREEN)
+        # Display rules title
+        rules_title = title_font.render("Rules", True, BLACK)
+        rules_title_rect = rules_title.get_rect(center=(WIDTH//2, rules_title_y))
+        screen.blit(rules_title, rules_title_rect)
+        
+        # Display rules text
+        y_offset = rules_text_start_y
+        for rule in rules_text:
+            rule_surface = instruction_font.render(rule, True, BLACK)
+            rule_rect = rule_surface.get_rect(center=(WIDTH//2, y_offset))
+            screen.blit(rule_surface, rule_rect)
+            y_offset += rules_text_spacing
+        
+        # Display instruction to return to menu
+        return_text = instruction_font.render("Press Enter to return to menu", True, BLACK)
+        return_rect = return_text.get_rect(center=(WIDTH//2, HEIGHT - rules_return_y_offset))
+        screen.blit(return_text, return_rect)
+
+    elif game_state == "leaderboard":
+        screen.fill(LIGHT_GREEN)
+        # Display leaderboard title
+        leaderboard_title = title_font.render("Top 10 Fastest Times", True, BLACK)
+        leaderboard_title_rect = leaderboard_title.get_rect(center=(WIDTH//2, leaderboard_title_y))
+        screen.blit(leaderboard_title, leaderboard_title_rect)
+        
+        # Display leaderboard entries
+        if len(reaction_times_list) == 0:
+            no_scores_text = instruction_font.render("No scores yet! Play to set a record.", True, BLACK)
+            no_scores_rect = no_scores_text.get_rect(center=(WIDTH//2, HEIGHT//2))
+            screen.blit(no_scores_text, no_scores_rect)
+        else:
+            y_offset = leaderboard_start_y
+            for i, time_val in enumerate(reaction_times_list, 1):
+                entry_text = instruction_font.render(f"{i}. {time_val:.3f}s", True, BLACK)
+                entry_rect = entry_text.get_rect(center=(WIDTH//2, y_offset))
+                screen.blit(entry_text, entry_rect)
+                y_offset += leaderboard_entry_spacing
+        
+        # Display instruction to return to menu
+        return_text = instruction_font.render("Press Enter to return to menu", True, BLACK)
+        return_rect = return_text.get_rect(center=(WIDTH//2, HEIGHT - leaderboard_return_y_offset))
         screen.blit(return_text, return_rect)
 
 
